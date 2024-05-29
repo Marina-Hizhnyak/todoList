@@ -46,7 +46,9 @@ addButton.addEventListener('click', function () {
     important: false
   }
   todoList.push(newTodo);
+  console.log(todoList);
   displayMessages();
+  addEvent();
   localStorage.setItem('todo', JSON.stringify(todoList));
   addMessage.value = '';
 });
@@ -58,20 +60,31 @@ function displayMessages() {
   todoList.forEach(function (item, i) {
     displayMessage +=
       `
-  <li class="list-group-item">
+  <li class="list-group-item d-flex justify-content-between align-items-center ">
+  <div>
     <input class="form-check-input me-1" type="checkbox" id='item_${i}' value="" aria-label="..." ${item.checked ? 'checked' : ''}>
    <label class="${item.important ? 'important' : ''}" for='item_${i}'>${item.todo}</label>
+   </div>
+   <button type="button" id='item_${i}' data-action="delete" class="btn btn-primary btn-sm" >Supprimer</button>
   </li>
     `;
     todo.innerHTML = displayMessage;
   })
 };
+function addEvent() {
+  const deleteButtons = document.querySelectorAll('[data-action="delete"]');
+  deleteButtons.forEach(function (item, i) {
+    console.log(item, i);
+    item.addEventListener('click', () => deleteTask(i));
 
+  });
+};
 
 todo.addEventListener('change', function (event) {
   let idInput = event.target.getAttribute('id');
   let forLabel = todo.querySelector('[for=' + idInput + ']');
   let valueLabel = forLabel.innerHTML;
+
 
   todoList.forEach(function (item) {
     if (item.todo === valueLabel) {
@@ -87,13 +100,27 @@ todo.addEventListener('contextmenu', function (e) {
   e.preventDefault();
   todoList.forEach(function (item, i) {
     if (item.todo === e.target.innerHTML) {
-      if (e.ctrlKey || e.metaKey) {
-        todoList.splice(i, 1);
-      } else {
-        item.important = !item.important;
-      }
-      displayMessages();
-      localStorage.setItem('todo', JSON.stringify(todoList));
+
+      item.important = !item.important;
     }
+    displayMessages();
+    localStorage.setItem('todo', JSON.stringify(todoList));
+
   })
 })
+
+
+
+
+function deleteTask(index) {
+  console.log(todoList, index);
+  const confirmed = confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?");
+  if (confirmed) {
+    todoList.splice(index, 1); // Supprime l'élément du tableau
+
+    // Met à jour l'affichage
+    localStorage.setItem('todo', JSON.stringify(todoList)); // Met à jour les données persistantes
+    displayMessages();
+    addEvent();
+  }
+}
